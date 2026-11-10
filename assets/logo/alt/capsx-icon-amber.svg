@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="CapsX">
+  <title>CapsX</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1B2231"/>
+      <stop offset="1" stop-color="#0B0F16"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#242D3E"/>
+      <stop offset="1" stop-color="#1A2130"/>
+    </linearGradient>
+  </defs>
+
+  <!-- app tile -->
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+
+  <!-- keycap: depth + face -->
+  <rect x="188" y="206" width="648" height="648" rx="132" fill="#090C12"/>
+  <rect x="188" y="188" width="648" height="648" rx="132" fill="url(#cap)" stroke="#33405A" stroke-width="4"/>
+
+  <!-- inverted-T navigation cluster (HJKL layer) -->
+  <g fill="none" stroke="#FFC24B" stroke-width="50" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M435.2 430.7 L512 353.3 L588.8 430.7"/>
+    <path d="M356.4 524.8 L279 601.6 L356.4 678.4"/>
+    <path d="M435.2 601.6 L512 678.4 L588.8 601.6"/>
+    <path d="M668.2 524.8 L745 601.6 L668.2 678.4"/>
+  </g>
+</svg>
+

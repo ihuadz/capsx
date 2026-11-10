@@ -1,0 +1,45 @@
+;; CapsX 默认键位模板
+;;
+;; 首次启动时 CapsX 会把它拷贝到 %APPDATA%\CapsX\keymap.kbd，
+;; 之后每次修改设置都会由 CapsX 重新生成（本文件不会被修改）。
+;;
+;; 手工编辑 keymap.kbd 也可以，但下次在设置里点「应用」会被覆盖。
+;; 语法参考：https://github.com/jtroo/kanata/blob/main/docs/config.adoc
+
+;; ------------------------------------------------------------
+;; 输入和弦（同时按下两个键）
+;; ------------------------------------------------------------
+(defchords navchords 80
+  (h)   left
+  (j)   down
+  (k)   up
+  (l)   right
+  (h l) (macro C-left C-S-right)   ;; 选中当前词
+  (k j) (macro home S-end)         ;; 选中当前行
+)
+
+(defalias
+  ch-h (chord navchords h)
+  ch-j (chord navchords j)
+  ch-k (chord navchords k)
+  ch-l (chord navchords l)
+)
+
+(defcfg
+  ;; 只接管 defsrc 里的键，其余按键原样透传
+  process-unmapped-keys yes
+)
+
+(defsrc
+  caps  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer base
+  (tap-hold-press 200 200 caps (layer-while-held nav))
+  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer nav
+  caps  @ch-h  @ch-j  @ch-k  @ch-l  home  end  pgdn  pgup  S-tab  tab  ret  del
+  (push-msg "capsx:settings")
+)

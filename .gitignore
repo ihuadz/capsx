@@ -1,0 +1,24 @@
+# build output
+bin/
+obj/
+dist/
+publish/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# python
+__pycache__/
+*.pyc
+
+# kanata binaries are fetched by tools/fetch-kanata.ps1, not committed
+runtime/*.exe
+
+# local scratch
+*.log
+*.tmp
+Thumbs.db
+desktop.ini
