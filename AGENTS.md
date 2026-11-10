@@ -113,6 +113,7 @@ capsx/
 
 - 来源：`kanata` release **v1.12.0** 的 `windows-binaries-x64.zip`
   （SHA256 `13947ed78cfa3284bfef854e3c542c74ab366236b72fd9f7e039f8638deead9d`）
+- 仓库已提供下载脚本：`tools/fetch-kanata.ps1`（自动校验 SHA256，产出 `runtime\kanata.exe`、`runtime\kanata.version`、`runtime\LICENSE.kanata.txt`）。构建前先跑它。
 - 使用其中的 **`kanata_windows_tty_winIOv2_x64.exe`**，重命名为 `runtime\kanata.exe`。
 - **不要**使用 `gui` 变体：它会自己驻留托盘图标，与 CapsX 的托盘冲突。
 - **不要**使用 `wintercept` 变体：需要装 Interception 驱动，且有"蓝牙键盘反复断连后失灵"的已知问题。
