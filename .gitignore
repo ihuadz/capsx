@@ -1,3 +1,7 @@
+# Rust build output
+target/
+**/*.rs.bk
+
 # build output
 bin/
 obj/
@@ -16,9 +20,11 @@ __pycache__/
 
 # kanata binaries are fetched by tools/fetch-kanata.ps1, not committed
 runtime/*.exe
+runtime/*.dll
 
 # local scratch
 *.log
 *.tmp
+*.pdb
 Thumbs.db
 desktop.ini
