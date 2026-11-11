@@ -8,7 +8,7 @@ edition = "2021"
 rust-version = "1.80"
 license = "MIT"
 authors = ["CapsX Contributors"]
-repository = "https://github.com/capsx/capsx"
+repository = "https://github.com/ihuadz/capsx"
 
 [workspace.dependencies]
 anyhow = "1.0"

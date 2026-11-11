@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一分支的新推送取消旧任务，避免排队
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: fmt / clippy / test
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+
+      # AGENTS.md 第 12 节：这三条必须绿，所以这里不吞任何警告
+      - name: cargo clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: cargo test
+        run: cargo test --locked
+
+  kanata-config:
+    name: kanata --check 集成测试
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: kanata
+
+      # 二进制不入库，按固定版本 + SHA256 拉取（tools/fetch-kanata.ps1 内部校验）
+      - name: 拉取 kanata v1.12.0
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/fetch-kanata.ps1
+
+      # 生成的每个 .kbd 都必须能被真实 kanata 接受，否则用户会拿到打不开的配置
+      - name: 生成的配置必须通过真实 kanata --check
+        run: cargo test --locked -p capsx-core --test config_snapshots -- --ignored
+
+  size-budget:
+    name: release 体积门禁
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release
+
+      - name: cargo build --release
+        run: cargo build --locked --release -p capsx-app
+
+      # AGENTS.md 第 11 节：目标 ≤ 8 MB，超出即失败，别让体积悄悄长回去
+      - name: 断言 capsx.exe ≤ 8 MiB
+        shell: pwsh
+        run: |
+          $exe = Get-Item 'target/release/capsx.exe'
+          $mib = $exe.Length / 1MB
+          Write-Host ("capsx.exe = {0:N0} 字节 / {1:N2} MiB" -f $exe.Length, $mib)
+          if ($exe.Length -gt 8MB) {
+            throw ("capsx.exe 已超出 8 MiB 预算：{0:N2} MiB" -f $mib)
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: capsx-exe
+          path: target/release/capsx.exe
+          retention-days: 14

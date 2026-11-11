@@ -3,9 +3,15 @@
 ; 编译：iscc installer\capsx.iss
 
 #define MyAppName "CapsX"
-#define MyAppVersion "0.1.0"
+; 版本号默认取这里的值；CI 打 tag 时用 iscc /DMyAppVersion=x.y.z 覆盖。
+#ifndef MyAppVersion
+  #define MyAppVersion "0.1.0"
+#endif
+#ifndef MyAppVersionQuad
+  #define MyAppVersionQuad "0.1.0.0"
+#endif
 #define MyAppPublisher "CapsX Contributors"
-#define MyAppURL "https://github.com/capsx/capsx"
+#define MyAppURL "https://github.com/ihuadz/capsx"
 #define MyAppExeName "capsx.exe"
 
 [Setup]
@@ -36,7 +42,7 @@ RestartApplications=no
 UsePreviousAppDir=yes
 AllowNoIcons=yes
 SetupLogging=yes
-VersionInfoVersion=0.1.0.0
+VersionInfoVersion={#MyAppVersionQuad}
 VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} Setup
 VersionInfoProductName={#MyAppName}

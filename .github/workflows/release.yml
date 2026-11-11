@@ -1,0 +1,118 @@
+name: Release
+
+# 推 v* tag 时自动构建安装包并发 Release；也可以在 Actions 页面手动重跑。
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 已存在的 tag（例如 v0.1.0），用于重跑
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  package:
+    name: 构建安装包并发布
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release
+
+      - name: 从 tag 解析版本号
+        id: ver
+        shell: pwsh
+        run: |
+          $tag = if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            '${{ inputs.tag }}'
+          } else {
+            '${{ github.ref_name }}'
+          }
+          if (-not $tag) { throw '拿不到 tag' }
+          $version = $tag -replace '^v', ''
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "quad=$version.0" >> $env:GITHUB_OUTPUT
+          Write-Host "tag=$tag version=$version"
+
+      # AGENTS.md 第 12 节：发包前必须全绿，避免把坏配置发出去
+      - name: cargo fmt / clippy / test
+        run: |
+          cargo fmt --all --check
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+
+      - name: 拉取 kanata v1.12.0
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File tools/fetch-kanata.ps1
+
+      - name: 生成的配置必须通过真实 kanata --check
+        run: cargo test --locked -p capsx-core --test config_snapshots -- --ignored
+
+      - name: cargo build --release
+        run: cargo build --locked --release -p capsx-app
+
+      - name: 安装 Inno Setup 6
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: 打安装包
+        shell: pwsh
+        run: |
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) { throw "找不到 $iscc" }
+          & $iscc "/DMyAppVersion=${{ steps.ver.outputs.version }}" `
+                  "/DMyAppVersionQuad=${{ steps.ver.outputs.quad }}" `
+                  'installer\capsx.iss'
+          if ($LASTEXITCODE -ne 0) { throw "ISCC 失败（exit $LASTEXITCODE）" }
+          Get-ChildItem dist\CapsX-Setup-*.exe | Select-Object Name, Length
+
+      - name: 生成 SHA256
+        shell: pwsh
+        run: |
+          Get-ChildItem dist\CapsX-Setup-*.exe | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)" | Out-File -FilePath "$($_.FullName).sha256" -Encoding ascii
+            Write-Host "$($_.Name)  $hash"
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CapsX-Setup
+          path: |
+            dist/CapsX-Setup-*.exe
+            dist/CapsX-Setup-*.exe.sha256
+          retention-days: 30
+
+      - name: 发布到 GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = '${{ steps.ver.outputs.tag }}'
+          $assets = @(Get-ChildItem dist\CapsX-Setup-* | Select-Object -ExpandProperty FullName)
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $tag 已存在，覆盖上传资产"
+            gh release upload $tag @assets --clobber --repo $env:GITHUB_REPOSITORY
+          } else {
+            gh release create $tag @assets `
+              --repo $env:GITHUB_REPOSITORY `
+              --title "CapsX $tag" `
+              --generate-notes `
+              --verify-tag
+          }
