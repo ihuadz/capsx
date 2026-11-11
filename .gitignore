@@ -1,5 +1,6 @@
 # Rust build output
 target/
+target-msrv/
 **/*.rs.bk
 
 # build output
@@ -26,5 +27,10 @@ runtime/*.dll
 *.log
 *.tmp
 *.pdb
+# local scratch screenshots (docs/screenshots are intentionally tracked)
+/ui-*.png
 Thumbs.db
 desktop.ini
+
+# downloaded font source (large; regenerate with tools/make_font_subset.py)
+cache/

@@ -1,0 +1,23 @@
+# 统一换行：仓库内一律 LF，检出时按下面的规则还原。
+# *.kbd 必须是 LF：快照测试是逐字节比较（见 crates/capsx-core/tests/config_snapshots.rs），
+# 若检出成 CRLF，干净克隆上 cargo test 会直接失败。
+* text=auto
+
+*.rs    text eol=lf
+*.toml  text eol=lf
+*.kbd   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.py    text eol=lf
+*.iss   text eol=lf
+
+# PowerShell 脚本必须是 UTF-8 with BOM（见 AGENTS.md 第 15 节）；BOM 是内容，不会被 eol 影响
+*.ps1   text eol=crlf
+
+# 二进制，禁止任何改动
+*.png   binary
+*.ico   binary
+*.ttf   binary
+*.rgba  binary
