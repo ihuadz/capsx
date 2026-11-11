@@ -97,34 +97,34 @@ fn visuals() -> Visuals {
     visuals.window_fill = CARD;
     visuals.extreme_bg_color = BG_BOTTOM;
     visuals.faint_bg_color = CARD_SOFT;
-    visuals.window_stroke = Stroke::new(1.0, BORDER);
+    visuals.window_stroke = Stroke::new(1.0_f32, BORDER);
     visuals.window_rounding = Rounding::same(8.0);
     visuals.menu_rounding = Rounding::same(8.0);
     visuals.hyperlink_color = ACCENT;
     visuals.selection.bg_fill = ACCENT;
-    visuals.selection.stroke = Stroke::new(1.0, BG_BOTTOM);
+    visuals.selection.stroke = Stroke::new(1.0_f32, BG_BOTTOM);
     visuals.widgets.noninteractive.bg_fill = CARD_SOFT;
-    visuals.widgets.noninteractive.bg_stroke = Stroke::new(1.0, BORDER);
-    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, TEXT);
+    visuals.widgets.noninteractive.bg_stroke = Stroke::new(1.0_f32, BORDER);
+    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0_f32, TEXT);
     visuals.widgets.noninteractive.rounding = Rounding::same(7.0);
     visuals.widgets.inactive.bg_fill = KEYCAP;
     visuals.widgets.inactive.weak_bg_fill = CARD_SOFT;
-    visuals.widgets.inactive.bg_stroke = Stroke::new(1.0, BORDER);
-    visuals.widgets.inactive.fg_stroke = Stroke::new(1.0, TEXT);
+    visuals.widgets.inactive.bg_stroke = Stroke::new(1.0_f32, BORDER);
+    visuals.widgets.inactive.fg_stroke = Stroke::new(1.0_f32, TEXT);
     visuals.widgets.inactive.rounding = Rounding::same(7.0);
     visuals.widgets.hovered.bg_fill = Color32::from_rgb(0x2C, 0x38, 0x4D);
     visuals.widgets.hovered.weak_bg_fill = Color32::from_rgb(0x25, 0x30, 0x43);
-    visuals.widgets.hovered.bg_stroke = Stroke::new(1.0, ACCENT_DIM);
-    visuals.widgets.hovered.fg_stroke = Stroke::new(1.0, Color32::WHITE);
+    visuals.widgets.hovered.bg_stroke = Stroke::new(1.0_f32, ACCENT_DIM);
+    visuals.widgets.hovered.fg_stroke = Stroke::new(1.0_f32, Color32::WHITE);
     visuals.widgets.hovered.rounding = Rounding::same(7.0);
     visuals.widgets.active.bg_fill = ACCENT_DIM;
     visuals.widgets.active.weak_bg_fill = ACCENT_DIM;
-    visuals.widgets.active.bg_stroke = Stroke::new(1.0, ACCENT);
-    visuals.widgets.active.fg_stroke = Stroke::new(1.0, BG_BOTTOM);
+    visuals.widgets.active.bg_stroke = Stroke::new(1.0_f32, ACCENT);
+    visuals.widgets.active.fg_stroke = Stroke::new(1.0_f32, BG_BOTTOM);
     visuals.widgets.active.rounding = Rounding::same(7.0);
     visuals.widgets.open.bg_fill = KEYCAP;
-    visuals.widgets.open.bg_stroke = Stroke::new(1.0, BORDER);
-    visuals.widgets.open.fg_stroke = Stroke::new(1.0, TEXT);
+    visuals.widgets.open.bg_stroke = Stroke::new(1.0_f32, BORDER);
+    visuals.widgets.open.fg_stroke = Stroke::new(1.0_f32, TEXT);
     visuals.widgets.open.rounding = Rounding::same(7.0);
     visuals
 }
@@ -160,7 +160,7 @@ pub fn status_pill(ui: &mut egui::Ui, state: &ServiceState) -> egui::Response {
         rect,
         Rounding::same(14.0),
         Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), 24),
-        Stroke::new(1.0, color.gamma_multiply(0.5)),
+        Stroke::new(1.0_f32, color.gamma_multiply(0.5)),
     );
     let text_pos = rect.center() - galley.size() / 2.0;
     ui.painter().galley(text_pos, galley, color);
@@ -170,8 +170,12 @@ pub fn status_pill(ui: &mut egui::Ui, state: &ServiceState) -> egui::Response {
 /// 小键帽。固定尺寸，保证键位网格对齐。
 pub fn keycap(ui: &mut egui::Ui, text: &str) -> egui::Response {
     let (rect, response) = ui.allocate_exact_size(Vec2::new(28.0, 24.0), egui::Sense::hover());
-    ui.painter()
-        .rect(rect, Rounding::same(6.0), KEYCAP, Stroke::new(1.0, BORDER));
+    ui.painter().rect(
+        rect,
+        Rounding::same(6.0),
+        KEYCAP,
+        Stroke::new(1.0_f32, BORDER),
+    );
     let galley = ui.painter().layout_no_wrap(
         text.to_owned(),
         FontId::new(11.5, FontFamily::Monospace),
@@ -199,7 +203,7 @@ pub fn primary_button(text: &str) -> egui::Button<'static> {
 pub fn secondary_button(text: &str) -> egui::Button<'static> {
     egui::Button::new(RichText::new(text.to_owned()).size(13.5).color(TEXT))
         .fill(CARD_SOFT)
-        .stroke(Stroke::new(1.0, BORDER))
+        .stroke(Stroke::new(1.0_f32, BORDER))
         .rounding(Rounding::same(7.0))
         .min_size(Vec2::new(64.0, 34.0))
 }

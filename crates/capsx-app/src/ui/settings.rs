@@ -457,7 +457,7 @@ fn section_divider(ui: &mut Ui) {
     ui.painter().hline(
         ui.max_rect().x_range(),
         line_y,
-        Stroke::new(1.0, theme::BORDER.gamma_multiply(0.7)),
+        Stroke::new(1.0_f32, theme::BORDER.gamma_multiply(0.7)),
     );
     ui.add_space(10.0);
 }
@@ -471,16 +471,16 @@ fn setting_checkbox(ui: &mut Ui, checked: &mut bool, label: &str) -> egui::Respo
         if *checked && ui.is_enabled() {
             let widgets = &mut ui.style_mut().visuals.widgets;
             widgets.inactive.bg_fill = theme::ACCENT;
-            widgets.inactive.bg_stroke = Stroke::new(1.0, theme::ACCENT);
-            widgets.inactive.fg_stroke = Stroke::new(1.7, Color32::WHITE);
+            widgets.inactive.bg_stroke = Stroke::new(1.0_f32, theme::ACCENT);
+            widgets.inactive.fg_stroke = Stroke::new(1.7_f32, Color32::WHITE);
             widgets.inactive.rounding = egui::Rounding::same(4.0);
             widgets.hovered.bg_fill = theme::ACCENT;
-            widgets.hovered.bg_stroke = Stroke::new(1.0, theme::ACCENT);
-            widgets.hovered.fg_stroke = Stroke::new(1.7, Color32::WHITE);
+            widgets.hovered.bg_stroke = Stroke::new(1.0_f32, theme::ACCENT);
+            widgets.hovered.fg_stroke = Stroke::new(1.7_f32, Color32::WHITE);
             widgets.hovered.rounding = egui::Rounding::same(4.0);
             widgets.active.bg_fill = theme::ACCENT_DIM;
-            widgets.active.bg_stroke = Stroke::new(1.0, theme::ACCENT);
-            widgets.active.fg_stroke = Stroke::new(1.7, Color32::WHITE);
+            widgets.active.bg_stroke = Stroke::new(1.0_f32, theme::ACCENT);
+            widgets.active.fg_stroke = Stroke::new(1.7_f32, Color32::WHITE);
             widgets.active.rounding = egui::Rounding::same(4.0);
         }
         ui.checkbox(checked, RichText::new(label).size(13.5).color(theme::TEXT))
@@ -547,7 +547,7 @@ fn banner_ui(ui: &mut Ui, banner: &Banner) {
 
     Frame::none()
         .fill(fill)
-        .stroke(Stroke::new(1.0, stroke.gamma_multiply(0.6)))
+        .stroke(Stroke::new(1.0_f32, stroke.gamma_multiply(0.6)))
         .rounding(egui::Rounding::same(8.0))
         .inner_margin(Margin::same(10.0))
         .show(ui, |ui| {
