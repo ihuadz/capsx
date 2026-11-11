@@ -44,7 +44,7 @@ CapsX 是一个**键盘导航层工具**：把 [kanata](https://github.com/jtroo
 | 日志 | 自写 100 行滚动日志（不引 `tracing`） |
 | 内核 | kanata **v1.12.0**，`winIOv2` + `tty` 变体 |
 
-**依赖白名单**：上面这些 + `log`（可选）。其余 crate 引入前必须在 PR 里说明理由与体积影响。
+**依赖白名单**：上面这些 + `log`（可选）+ `windows-sys`（仅 Windows FFI）。其余 crate 引入前必须在 PR 里说明理由与体积影响。
 
 **明确禁止**：`tokio` / 任何 async 运行时、`reqwest`、`tauri`、`electron`、`qt`、`gtk`（Linux 托盘由 `tray-icon` 内部处理）、`azure`/`webview` 类依赖。
 
@@ -102,7 +102,7 @@ capsx/
 ```
 [主线程] capsx-app (eframe, glow)
    ├─ App::new(): 读设置、算端口、校验配置、启动 kanata、连 TCP
-   ├─ 首次 update(): 创建 tray-icon + global-hotkey（必须主线程，见 5.3）
+   ├─ 首次 update(): 创建 global-hotkey；启动 capsx-tray 托盘线程（见 5.3）
    ├─ update(): 消费 AppEvent 队列 → 更新 UI / 执行动作
    └─ 窗口 visible=false 时仍每 250ms request_repaint_after 轮询
 [子线程] kanata 监督：spawn / wait / 退避重启 → 发 AppEvent::KanataExited
@@ -136,10 +136,14 @@ capsx/
 
 ### 5.3 托盘与热键的线程约束
 
-- `tray-icon` 与 `global-hotkey` 都需要**消息循环**：在 Windows 上必须在主线程创建，且主线程要有消息泵（winit 的循环满足）。
-- 因此：**第一次 `update()` 里创建**它们，保存到 App 状态；不要在 `main()` 里提前创建。
+- `global-hotkey` 必须在主线程创建；`tray-icon` 默认也应在主线程，但 Windows 下
+  `TrackPopupMenu` 的模态循环会让 winit 的重绘调度停摆。
+- **M1 已走退路**：`capsx-tray` 专用线程负责 `tray-icon`、菜单和 Win32
+  `GetMessageW` 循环；菜单动作经 channel 回主线程。主线程仍创建 `global-hotkey`，
+  并保持 250ms 轮询。不要再把托盘移回主线程。
+- 第一次 `update()` 里创建热键并启动托盘线程，保存句柄到 App 状态；不要在 `main()` 里提前创建。
 - 窗口隐藏时不产生重绘，所以隐藏态必须 `ctx.request_repaint_after(Duration::from_millis(250))`，否则托盘菜单点击无响应。
-- 若实际测试发现托盘菜单不响应（不同 winit 版本行为差异），退路：把托盘放到专用线程并自己跑 `GetMessage` 循环，通过 channel 通知主线程 `request_repaint()`。**只有实测失败才走这条退路**，不要提前复杂化。
+- 如果未来替换托盘实现，必须实测主线程方案；一旦菜单关闭后 update 停摆，使用专用线程 + channel 回主线程。
 
 ## 6. kanata 集成契约
 
@@ -256,30 +260,19 @@ kanata.exe -c "<config_dir>/keymap.kbd" -p 127.0.0.1:<port> -q
 
 ### 8.1 窗口形态
 
-- 单窗口，标题 `CapsX 设置`，约 520×420，可缩放但不记忆尺寸（M1）。
-- 隐藏用 `ViewportCommand::Visible(false)`，**不要销毁窗口**（重建代价高、也会丢托盘线程状态）。
+- 单窗口，标题 `CapsX 设置`；默认约 **620×900**，最小 **400×480**，可缩放。
+- 顶部标题栏和底部操作栏固定；仅中间设置区滚动。
+- 420/520/640 宽度都能完整使用；键位网格在内容宽 <440 时两列，否则四列。
+- 隐藏沿用第 5.3 节的离屏方案（不要 `Visible(false)`），打开时恢复并置顶。
 - 关闭按钮 = 隐藏到托盘（`settings.tray.visible == false` 时也要能通过热键唤回）。
 - 中文字体：egui 默认字体不含 CJK，**必须内嵌一个中文子集字体**（如思源黑体子集，或加载 `C:\Windows\Fonts\msyh.ttc` 的 fallback）。为保证跨平台，**优先内嵌子集**，体积控制在 ~1.5MB 内；实在不行再用系统字体 + fallback 列表。
 
 ### 8.2 界面内容（M1）
 
-```
-CapsX                                   [状态: 运行中 ●]
-─────────────────────────────────────
-[✓] 启用导航层
-[✓] 启用和弦（h+l 选词 / k+j 选行）
-    长按判定   [ 200 ] ms   (150–400)
-    和弦窗口   [  80 ] ms   (50–200)
-[✓] 显示托盘图标
-[✓] 开机自启
-─────────────────────────────────────
-键位：  h← j↓ k↑ l→   y=Home o=End   u=PgDn i=PgUp   [=S-Tab ]=Tab  g=Enter t=Del
-                                          [恢复默认]
-─────────────────────────────────────
-[应用]  [关闭]              [打开配置文件夹] [查看日志]
-```
-
-- 状态圆点：绿=运行中，黄=重启中，红=启动失败。
+- 顶部：Logo、产品名、一句简述、紧凑运行状态。
+- 中间：`导航与输入` / `启动与托盘` / `键位映射` 三组；20px 左右内边距，留白 + 细分隔线分组，不使用大圆角卡片。
+- 设置说明放在对应控件下方；时间输入统一 `ms`、同一基线的 96×30 字段；键位为等宽规则网格。
+- 底部：左侧「更多」（关于/配置目录/查看日志），右侧「关闭」「应用」；主按钮薄荷绿，高约 34px。
 - 「应用」走 7.3 流程；失败时窗口不关，顶部显示红色错误条（可展开看 stderr）。
 - 设置窗单例；重复唤出 = 置前聚焦。
 
@@ -402,7 +395,7 @@ cargo test
 ## 13. 品牌资产（已就绪）
 
 - `assets/logo/capsx.ico`、`capsx-icon-{16..1024}.png`、`capsx-icon.svg`、`capsx-wordmark.png`、`alt/`（琥珀变体）
-- 配色：强调 `#3BE3AE`；底 `#1B2231→#0B0F16`；键帽 `#242D3E→#1A2130`；描边 `#33405A`
+- 配色：强调 `#3BE3AE`；底 `#11161F`；输入/键帽 `#242D3E`；描边 `#2A3548`
 - 重新生成：`python tools/make_brand_assets.py`（需要 Pillow）
 
 egui 里把配色写成 `const`，窗口标题栏/控件用强调色点缀，不要另起一套色。
