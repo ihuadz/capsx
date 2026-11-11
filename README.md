@@ -2,6 +2,11 @@
 
 # CapsX
 
+[![CI](https://github.com/ihuadz/capsx/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ihuadz/capsx/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ihuadz/capsx?color=3BE3AE&label=release)](https://github.com/ihuadz/capsx/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3BE3AE.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-11161F.svg)](#安装)
+
 **把 CapsLock 变成导航层。** 按住 `CapsLock` + `HJKL` = 方向键，轻点 `CapsLock` 仍然是大小写锁定。
 
 基于 [kanata](https://github.com/jtroo/kanata) 这一开源重映射引擎，用 **Rust + egui** 封装成可以**安装、设置、卸载**的小工具——不再是"一堆脚本 + 一堆配置 + 一堆用不到的功能"。
@@ -35,6 +40,15 @@ CapsX 只做一件事：**把 CapsLock 变成一个导航层**，并且把它做
 - **托盘显示 / 隐藏**，开机自启可开关
 - **配置坏不了**：应用前先校验，失败自动回滚，键盘永远可用
 - **单用户安装、无需管理员**，卸载干净
+
+## 界面
+
+设置窗口只有一页，改完点「应用」即刻生效；窗口宽度 420 / 520 / 640 下键位网格会自动在
+两列和四列之间切换。
+
+| 设置（520px） | 键位映射 | 窄窗（420px） |
+|---|---|---|
+| ![设置窗口](docs/screenshots/settings.png) | ![键位映射](docs/screenshots/settings-mappings.png) | ![窄窗](docs/screenshots/ui-420.png) |
 
 ## 体积与内存
 
@@ -70,11 +84,9 @@ CapsX 只做一件事：**把 CapsLock 变成一个导航层**，并且把它做
 
 轻点 `CapsLock` 仍然是大小写锁定。
 
-![键位设置](docs/screenshots/settings-mappings.png)
-
 ## 安装
 
-1. 下载 `CapsX-Setup-x.y.z.exe`
+1. 从 [Releases](https://github.com/ihuadz/capsx/releases) 下载最新的 `CapsX-Setup-x.y.z.exe`（同页附 SHA256，便于校验）
 2. 双击安装（单用户安装，**不需要管理员权限**）
 3. 装完自动启动，托盘出现 CapsX 图标
 4. 按住 `CapsLock` 按 `h/j/k/l` 试试
@@ -135,7 +147,7 @@ python tools/make_font_subset.py
 常用验证命令：
 
 ```powershell
-cargo fmt --all -- --check
+cargo fmt --all --check
 cargo clippy --all-targets -- -D warnings
 cargo test
 cargo test -p capsx-core --test config_snapshots -- --ignored
