@@ -139,9 +139,10 @@ cargo run --release -p capsx-app
 # 4. 生成安装包（Inno Setup 6 的 iscc 需要在 PATH，或用完整路径）
 iscc installer/capsx.iss
 
-# 重新生成品牌资产 / 中文字体子集（可选）
+# 重新生成品牌资产 / 中文字体子集 / 社交预览图（可选）
 python tools/make_brand_assets.py
 python tools/make_font_subset.py
+python tools/make_social_preview.py
 ```
 
 常用验证命令：
