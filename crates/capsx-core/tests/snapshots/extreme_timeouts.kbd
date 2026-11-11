@@ -1,0 +1,38 @@
+;; CapsX 自动生成的 kanata 配置
+;; 在 CapsX 设置里点击「应用」会覆盖本文件。
+;; 语法参考：https://github.com/jtroo/kanata/blob/main/docs/config.adoc
+
+;; 输入和弦：同时按下两个导航键。
+;; 注释必须使用双分号，单个分号会让 kanata 拒绝加载。
+(defchords navchords 10
+  (h) left
+  (j) down
+  (k) up
+  (l) right
+  (h l) (macro C-left C-S-right)
+  (k j) (macro home S-end)
+)
+
+(defalias
+  ch-h (chord navchords h)
+  ch-j (chord navchords j)
+  ch-k (chord navchords k)
+  ch-l (chord navchords l)
+)
+
+(defcfg
+  ;; 只接管 defsrc 里的键，其余按键原样透传
+  process-unmapped-keys yes
+)
+
+(defsrc
+  caps  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer base
+  (tap-hold-press 50 1000 caps (layer-while-held nav))  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer nav
+  caps  @ch-h  @ch-j  @ch-k  @ch-l  home  end  pgdn  pgup  S-tab  tab  ret  del  (push-msg "capsx:settings")
+)

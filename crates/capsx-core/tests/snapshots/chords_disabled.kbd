@@ -1,0 +1,20 @@
+;; CapsX 自动生成的 kanata 配置
+;; 在 CapsX 设置里点击「应用」会覆盖本文件。
+;; 语法参考：https://github.com/jtroo/kanata/blob/main/docs/config.adoc
+
+(defcfg
+  ;; 只接管 defsrc 里的键，其余按键原样透传
+  process-unmapped-keys yes
+)
+
+(defsrc
+  caps  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer base
+  (tap-hold-press 200 200 caps (layer-while-held nav))  h  j  k  l  y  o  u  i  [  ]  g  t  ,
+)
+
+(deflayer nav
+  caps  left  down  up  right  home  end  pgdn  pgup  S-tab  tab  ret  del  (push-msg "capsx:settings")
+)

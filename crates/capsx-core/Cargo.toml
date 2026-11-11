@@ -1,0 +1,19 @@
+[package]
+name = "capsx-core"
+description = "CapsX 的纯逻辑核心：设置、配置生成、kanata 进程与 TCP 协议"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+directories.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.52"

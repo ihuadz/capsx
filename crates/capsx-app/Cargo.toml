@@ -1,0 +1,30 @@
+[package]
+name = "capsx-app"
+description = "CapsX 的 egui 托盘与设置窗口"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "capsx"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+capsx-core = { path = "../capsx-core" }
+eframe = { version = "0.29.1", default-features = false, features = ["glow"] }
+global-hotkey = "0.6.3"
+log.workspace = true
+single-instance = "0.3.3"
+tray-icon = { version = "0.19.0", default-features = false }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+] }
